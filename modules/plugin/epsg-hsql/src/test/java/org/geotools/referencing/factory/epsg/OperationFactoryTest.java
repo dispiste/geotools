@@ -28,6 +28,7 @@ import org.geotools.metadata.iso.citation.Citations;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.NamedIdentifier;
 import org.geotools.referencing.ReferencingFactoryFinder;
+import org.geotools.referencing.crs.DefaultTemporalCRS;
 import org.geotools.referencing.operation.AbstractCoordinateOperation;
 import org.geotools.referencing.operation.AuthorityBackedFactory;
 import org.geotools.referencing.operation.BufferedCoordinateOperationFactory;
@@ -40,6 +41,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -239,7 +241,7 @@ public class OperationFactoryTest extends TestCase {
         final CRSAuthorityFactory crsAuthFactory;
         final CoordinateOperationFactory opFactory;
         CoordinateReferenceSystem sourceCRS, sourceHorizontalCRS, sourceVerticalCRS;
-        CoordinateReferenceSystem targetCRS, targetHorizontalCRS;
+        CoordinateReferenceSystem targetCRS;
         CoordinateOperation operation;
         Map<String, Object> properties;
         CoordinateReferenceSystem[] elements;
@@ -274,6 +276,66 @@ public class OperationFactoryTest extends TestCase {
         // try reverse order
         operation = opFactory.createOperation(targetCRS, sourceCRS);
         assertOperation(operation, targetCRS, sourceCRS);
+    }
+
+    /**
+     * Tests findOperations method for a pair of Compound CRS having a temporal component
+     */
+    public void testCreateOperationCompound2CompoundTemporal() throws Exception {
+        final CRSAuthorityFactory crsAuthFactory;
+        final CoordinateOperationFactory opFactory;
+        CoordinateReferenceSystem sourceCRS, sourceHorizontalCRS;
+        CoordinateReferenceSystem targetCRS, targetHorizontalCRS;
+        CoordinateOperation operation;
+        Map<String, Object> properties;
+        CoordinateReferenceSystem[] elements;
+
+        CRSFactory crsFactory = ReferencingFactoryFinder.getCRSFactory(null);
+        crsAuthFactory = ReferencingFactoryFinder.getCRSAuthorityFactory("EPSG", null);
+        opFactory = ReferencingFactoryFinder.getCoordinateOperationFactory(null);
+
+        // temporal CRS
+        TemporalCRS tCRS1 = DefaultTemporalCRS.DUBLIN_JULIAN;
+        TemporalCRS tCRS2 = DefaultTemporalCRS.JULIAN;
+
+        operation = opFactory.createOperation(tCRS1, tCRS2);
+        operation = opFactory.createOperation(tCRS1, DefaultTemporalCRS.JAVA);
+        operation = opFactory.createOperation(tCRS2, DefaultTemporalCRS.JAVA);
+        operation = opFactory.createOperation(DefaultTemporalCRS.UNIX, DefaultTemporalCRS.JAVA);
+
+        // test compound = horizontal(projected) + temporal. Same horizontal CRS, different temporal CRS
+        sourceHorizontalCRS = crsAuthFactory.createCoordinateReferenceSystem("EPSG:25830");
+        properties = new HashMap<String, Object>();
+        properties.put(IdentifiedObject.NAME_KEY, new NamedIdentifier(Citations.fromName("TEST"),
+                "Compound = 28530 + temporal DUBLIN_JULIAN"));
+        elements = new CoordinateReferenceSystem[] { sourceHorizontalCRS, tCRS1 };
+        sourceCRS = crsFactory.createCompoundCRS(properties, elements);
+
+        targetHorizontalCRS = crsAuthFactory.createCoordinateReferenceSystem("EPSG:25830");
+        properties = new HashMap<String, Object>();
+        properties.put(IdentifiedObject.NAME_KEY, new NamedIdentifier(Citations.fromName("TEST"),
+                "Compound = 28530 + temporal JULIAN"));
+        elements = new CoordinateReferenceSystem[] { targetHorizontalCRS, tCRS2 };
+        targetCRS = crsFactory.createCompoundCRS(properties, elements);
+        operation = opFactory.createOperation(sourceCRS, targetCRS);
+        assertOperation(operation, sourceCRS, targetCRS);
+
+        // test compound = horizontal(projected) + temporal. Different horizontal CRS, different temporal CRS
+        sourceHorizontalCRS = crsAuthFactory.createCoordinateReferenceSystem("EPSG:23030");
+        properties = new HashMap<String, Object>();
+        properties.put(IdentifiedObject.NAME_KEY, new NamedIdentifier(Citations.fromName("TEST"),
+                "Compound = 23030 + temporal DUBLIN_JULIAN"));
+        elements = new CoordinateReferenceSystem[] { sourceHorizontalCRS, tCRS1 };
+        sourceCRS = crsFactory.createCompoundCRS(properties, elements);
+
+        targetHorizontalCRS = crsAuthFactory.createCoordinateReferenceSystem("EPSG:25830");
+        properties = new HashMap<String, Object>();
+        properties.put(IdentifiedObject.NAME_KEY, new NamedIdentifier(Citations.fromName("TEST"),
+                "Compound = 28530 + temporal JULIAN"));
+        elements = new CoordinateReferenceSystem[] { targetHorizontalCRS, tCRS2 };
+        targetCRS = crsFactory.createCompoundCRS(properties, elements);
+        operation = opFactory.createOperation(sourceCRS, targetCRS);
+        assertOperation(operation, sourceCRS, targetCRS);
     }
 
 }
