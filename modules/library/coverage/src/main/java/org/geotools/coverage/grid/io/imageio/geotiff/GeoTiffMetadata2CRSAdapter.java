@@ -42,9 +42,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import si.uom.NonSI;
-import si.uom.SI;
-
 import javax.measure.Quantity;
 import javax.measure.Unit;
 
@@ -92,6 +89,9 @@ import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+
+import si.uom.NonSI;
+import si.uom.SI;
 
 /**
  * The <code>GeoTiffMetadata2CRSAdapter</code> is responsible for interpreting
@@ -293,9 +293,9 @@ public final class GeoTiffMetadata2CRSAdapter {
 			//
 			// //
                         boolean isDefaultUnit = metadata.getGeoKey(GeoTiffPCSCodes.ProjLinearUnitsGeoKey) == null
-                                && linearUnit != null && linearUnit.equals(SI.METRE);
+                                && linearUnit != null && Units.equals(linearUnit, SI.METRE);
 			if (linearUnit == null || isDefaultUnit
-			        || linearUnit.equals(pcrs.getCoordinateSystem().getAxis(0).getUnit())){
+			        || Units.equals(linearUnit, pcrs.getCoordinateSystem().getAxis(0).getUnit())){
 			    return pcrs;
 			}
 			
@@ -395,7 +395,7 @@ public final class GeoTiffMetadata2CRSAdapter {
 				}
 				gcs = (GeographicCRS) allAuthoritiesFactory.createCoordinateReferenceSystem(geogCode.toString());
 				if (angularUnit != null
-						&& !angularUnit.equals(gcs.getCoordinateSystem()
+						&& !Units.equals(angularUnit, gcs.getCoordinateSystem()
 								.getAxis(0).getUnit())) {
 					// //
 					//
@@ -759,7 +759,7 @@ public final class GeoTiffMetadata2CRSAdapter {
 
 
                         // standard unit of measure
-			if (linearUnit != null && linearUnit.equals(SI.METRE)){
+			if (linearUnit != null && Units.equals(linearUnit, SI.METRE)){
 	                        return new DefaultProjectedCRS(
 	                                java.util.Collections.singletonMap("name",projectedCrsName),
 	                                conversionFromBase,
@@ -779,7 +779,7 @@ public final class GeoTiffMetadata2CRSAdapter {
 		}
 		
 		// standard projection
-		if (linearUnit != null && !linearUnit.equals(SI.METRE)){
+		if (linearUnit != null && !Units.equals(linearUnit, SI.METRE)){
 		    return new DefaultProjectedCRS(
 	                        Collections.singletonMap("name",projectedCrsName), 
 	                        conversionFromBase,

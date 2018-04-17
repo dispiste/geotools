@@ -21,7 +21,10 @@ package org.geotools.referencing.wkt;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
+import javax.measure.IncommensurableException;
+import javax.measure.UnconvertibleException;
 import javax.measure.Unit;
 import javax.measure.format.UnitFormat;
 
@@ -34,6 +37,7 @@ import si.uom.NonSI;
 import si.uom.SI;
 import systems.uom.common.USCustomary;
 import tec.uom.se.format.SimpleUnitFormat;
+import tec.uom.se.unit.TransformedUnit;
 
 /**
  * Provides unit formatting for EPSG and ESRI WKT dialects
@@ -65,6 +69,7 @@ abstract class GeoToolsUnitFormat extends SimpleUnitFormat {
      * @author Andrea Aime - GeoSolutions
      */
     static abstract class BaseGT2Format extends DefaultFormat {
+        protected HashMap<UnitWrapper, Unit<?>> unitWrapperToUnitMap = new HashMap<UnitWrapper, Unit<?>>();
         public BaseGT2Format() {
             super();
 
@@ -84,7 +89,7 @@ abstract class GeoToolsUnitFormat extends SimpleUnitFormat {
                 java.lang.reflect.Field unitToNameField = DefaultFormat.class
                         .getDeclaredField("_unitToName");
                 unitToNameField.setAccessible(true);
-                HashMap<String, Unit<?>> unitToNameMap = (HashMap<String, Unit<?>>) unitToNameField
+                HashMap<Unit<?>, String> unitToNameMap = (HashMap<Unit<?>, String>) unitToNameField
                         .get(base);
                 for (Map.Entry<String, Unit<?>> entry : nameToUnitMap.entrySet()) {
                     String name = entry.getKey();
@@ -92,6 +97,7 @@ abstract class GeoToolsUnitFormat extends SimpleUnitFormat {
                     if (unitToNameMap.containsKey(unit)
                             && name.equals(unitToNameMap.get(unit))) {
                         label(unit, name);
+                        unitWrapperToUnitMap.put(new UnitWrapper(unit), unit);
                     } else {
                         alias(unit, name);
                     }
@@ -99,6 +105,55 @@ abstract class GeoToolsUnitFormat extends SimpleUnitFormat {
             } catch (Throwable t) {
                 // we tried...
             }
+        }
+
+        @Override
+        protected String nameFor(Unit<?> unit) {
+            Unit<?> equivalentUnit = unitWrapperToUnitMap.get(new UnitWrapper(unit));
+            if (equivalentUnit != null) {
+                return super.nameFor(equivalentUnit);
+            }
+            return super.nameFor(unit);
+        }
+        
+       @Override
+        public void label(Unit<?> unit, String label) {
+            unitWrapperToUnitMap.put(new UnitWrapper(unit), unit);
+            super.label(unit, label);
+        }
+    }
+
+    static class UnitWrapper {
+        private Unit<?> unit;
+
+        public UnitWrapper(Unit<?> unit) {
+            this.unit = unit;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof UnitWrapper) {
+                return Units.equals(unit, ((UnitWrapper) obj).getUnit());
+            }
+            return false;
+        }
+
+        public Unit<?> getUnit() {
+            return unit;
+        }
+
+        @Override
+        public int hashCode() {
+            if (unit instanceof TransformedUnit<?>) {
+                Unit<?> systemUnit = unit.getSystemUnit();
+                try {
+                    float factor1 = (float) unit.getConverterToAny(systemUnit).convert(1.0);
+                    return Objects.hash(systemUnit, Float.floatToIntBits(factor1));
+                } catch (UnconvertibleException | IncommensurableException e) {
+                } catch (Throwable e) {
+                }
+            }
+            return unit.hashCode();
         }
     }
 

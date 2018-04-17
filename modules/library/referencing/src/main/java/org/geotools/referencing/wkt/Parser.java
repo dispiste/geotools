@@ -88,7 +88,6 @@ import org.opengis.referencing.operation.OperationMethod;
 
 import si.uom.NonSI;
 import si.uom.SI;
-import systems.uom.common.USCustomary;
 import tec.uom.se.AbstractUnit;
 
 
@@ -492,7 +491,7 @@ public class Parser extends MathTransformParser {
     {
         final CoordinateSystemAxis candidate =
                 DefaultCoordinateSystemAxis.getPredefined(abbreviation, direction);
-        if (candidate != null && unit.equals(candidate.getUnit())) {
+        if (candidate != null && Units.equals(unit, candidate.getUnit())) {
             return candidate;
         }
         if (properties == null) {
@@ -891,9 +890,15 @@ public class Parser extends MathTransformParser {
         String                name = element.pullString("name");
         Map<String,?>   properties = parseAuthority(element, name);
         Unit<Angle>    angularUnit = parseUnit     (element, SI.RADIAN);
+        CoordinateSystemAxis axis0 = parseAxis     (element, angularUnit, false);
+        if (axis0 != null) {
+            if (Units.equals(angularUnit, axis0.getUnit())) {
+                // if they are close enough, set an angular unit which is coherent with the axis unit
+                angularUnit = axis0.getUnit().asType(Angle.class);
+            }
+        }
         PrimeMeridian     meridian = parsePrimem   (element, angularUnit);
         GeodeticDatum        datum = parseDatum    (element, meridian);
-        CoordinateSystemAxis axis0 = parseAxis     (element, angularUnit, false);
         CoordinateSystemAxis axis1;
         CoordinateSystemAxis axis2 = null;
         try {

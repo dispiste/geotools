@@ -30,6 +30,7 @@ import javax.measure.Unit;
 import javax.measure.UnitConverter;
 
 import org.geotools.measure.Measure;
+import org.geotools.measure.Units;
 import org.geotools.referencing.AbstractIdentifiedObject;
 import org.geotools.referencing.operation.matrix.GeneralMatrix;
 import org.geotools.referencing.wkt.Formatter;
@@ -37,7 +38,6 @@ import org.geotools.resources.Classes;
 import org.geotools.resources.i18n.ErrorKeys;
 import org.geotools.resources.i18n.Errors;
 import org.geotools.resources.i18n.Vocabulary;
-import org.geotools.util.Utilities;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -364,7 +364,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
                     continue;
                 }
                 final Unit<?> sourceUnit = sourceCS.getAxis(i).getUnit();
-                if (Utilities.equals(sourceUnit, targetUnit)) {
+                if (Units.equals(sourceUnit, targetUnit)) {
                     // There is no units conversion to apply
                     // between source[i] and target[j].
                     continue;
@@ -518,7 +518,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
         CoordinateSystemAxis[] newAxis = null;
         for (int i=0; i<axis.length; i++) {
             CoordinateSystemAxis a = axis[i];
-            if (!unit.equals(a.getUnit())) {
+            if (!Units.equals(unit, a.getUnit())) {
                 DefaultCoordinateSystemAxis converted;
                 if (a instanceof DefaultCoordinateSystemAxis) {
                     converted = (DefaultCoordinateSystemAxis) a;

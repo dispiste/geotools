@@ -30,6 +30,7 @@ import javax.measure.UnconvertibleException;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 
+import org.geotools.measure.Units;
 import org.geotools.referencing.AbstractIdentifiedObject;
 import org.geotools.referencing.wkt.Formatter;
 import org.geotools.resources.i18n.ErrorKeys;
@@ -1153,7 +1154,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject
     final DefaultCoordinateSystemAxis usingUnit(final Unit<?> newUnit)
             throws IllegalArgumentException
     {
-        if (unit.equals(newUnit)) {
+        if (Units.equals(unit, newUnit)) {
             return this;
         }
         if (unit.isCompatible(newUnit)) {
@@ -1277,7 +1278,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject
             }
         }
         return Utilities.equals(this.direction, that.direction) &&
-               (!compareUnit || Utilities.equals(this.unit, that.unit));
+                (!compareUnit || Units.equals(this.unit, that.unit));
     }
 
     /**

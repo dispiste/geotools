@@ -16,22 +16,19 @@
  */
 package org.geotools.data.wmts.client;
 
-import org.geotools.data.wmts.model.TileMatrixLimits;
-import org.geotools.data.wmts.model.TileMatrix;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.measure.UnitConverter;
-import javax.measure.quantity.Length;
-
-import si.uom.NonSI;
-import si.uom.SI;
 import javax.measure.Unit;
+import javax.measure.UnitConverter;
+
+import org.geotools.data.wmts.model.TileMatrix;
+import org.geotools.data.wmts.model.TileMatrixLimits;
 import org.geotools.data.wmts.model.TileMatrixSet;
 import org.geotools.data.wmts.model.TileMatrixSetLink;
-
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.measure.Units;
 import org.geotools.tile.Tile;
 import org.geotools.tile.TileFactory;
 import org.geotools.tile.TileService;
@@ -40,6 +37,9 @@ import org.geotools.util.logging.Logging;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
+
+import si.uom.NonSI;
+import si.uom.SI;
 
 /**
  * Implementation of TileFactory for WMTS
@@ -236,7 +236,7 @@ public class WMTSTileFactory extends TileFactory {
 
         // now divide by meters per unit!
         double pixelSpan = tileMatrix.getDenominator() * PixelSizeMeters;
-        if (unit.equals(NonSI.DEGREE_ANGLE)) {
+        if (Units.equals(unit, NonSI.DEGREE_ANGLE)) {
             /*
              * use the length of a degree at the equator = 60 nautical miles!
              * unit = USCustomary.NAUTICAL_MILE; UnitConverter metersperunit =

@@ -21,14 +21,17 @@ package org.geotools.referencing.datum;
 
 import java.util.Collections;
 import java.util.Map;
-import si.uom.NonSI;
+
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 
-import org.opengis.referencing.datum.PrimeMeridian;
+import org.geotools.measure.Units;
 import org.geotools.referencing.AbstractIdentifiedObject;
 import org.geotools.referencing.wkt.Formatter;
 import org.geotools.util.Utilities;
+import org.opengis.referencing.datum.PrimeMeridian;
+
+import si.uom.NonSI;
 
 
 /**
@@ -147,7 +150,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * @return The Greenwich longitude in the given units.
      */
     public double getGreenwichLongitude(final Unit<Angle> targetUnit) {
-        return getAngularUnit().getConverterTo(targetUnit).convert(getGreenwichLongitude());
+        return Units.getConverterToAny(getAngularUnit(), targetUnit).convert(getGreenwichLongitude());
     }
 
     /**
@@ -174,7 +177,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
             final DefaultPrimeMeridian that = (DefaultPrimeMeridian) object;
             if (compareMetadata) {
                 return Utilities.equals(this.greenwichLongitude, that.greenwichLongitude) &&
-                       Utilities.equals(this.angularUnit, that.angularUnit);
+                       Units.equals(this.angularUnit, that.angularUnit);
             } else {
                 return Utilities.equals(this.getGreenwichLongitude(NonSI.DEGREE_ANGLE), 
                         that.getGreenwichLongitude(NonSI.DEGREE_ANGLE));

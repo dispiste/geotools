@@ -319,35 +319,32 @@ public final class CRS2GeoTiffMetadataAdapter {
             }
             @SuppressWarnings("unchecked")
             Unit<Length> linearUnit = (Unit<Length>) unit;
-                if (SI.METRE.equals(linearUnit)) {
+            if (Units.equals(unit, SI.METRE)) {
+                metadata.addGeoShortParam(GeoTiffPCSCodes.ProjLinearUnitsGeoKey,
+                        GeoTiffUoMCodes.Linear_Meter);
+                metadata.addGeoDoubleParam(GeoTiffPCSCodes.ProjLinearUnitSizeGeoKey, 1.0);
+            } else if (Units.equals(USCustomary.NAUTICAL_MILE, linearUnit)) {
+                metadata.addGeoShortParam(GeoTiffPCSCodes.ProjLinearUnitsGeoKey,
+                        GeoTiffUoMCodes.Linear_Mile_International_Nautical);
+                metadata.addGeoDoubleParam(GeoTiffPCSCodes.ProjLinearUnitSizeGeoKey,
+                        linearUnit.getConverterTo(SI.METRE).convert(1));
+            }else
+                if (Units.equals(USCustomary.FOOT, linearUnit)) {
                     metadata.addGeoShortParam(GeoTiffPCSCodes.ProjLinearUnitsGeoKey,
-                            GeoTiffUoMCodes.Linear_Meter);
-                    metadata.addGeoDoubleParam(GeoTiffPCSCodes.ProjLinearUnitSizeGeoKey, 1.0);
-                }else
-                    if (USCustomary.NAUTICAL_MILE.equals(linearUnit)) {
-                        metadata.addGeoShortParam(GeoTiffPCSCodes.ProjLinearUnitsGeoKey,
-                                GeoTiffUoMCodes.Linear_Mile_International_Nautical);
-                        metadata.addGeoDoubleParam(GeoTiffPCSCodes.ProjLinearUnitSizeGeoKey, linearUnit
-                                .getConverterTo(SI.METRE).convert(1));
-                }else
-                    if (USCustomary.FOOT.equals(linearUnit)) {
-                        metadata.addGeoShortParam(GeoTiffPCSCodes.ProjLinearUnitsGeoKey,
-                                GeoTiffUoMCodes.Linear_Foot);
-                        metadata.addGeoDoubleParam(GeoTiffPCSCodes.ProjLinearUnitSizeGeoKey, linearUnit
-                                .getConverterTo(SI.METRE).convert(1));
-                } else
-                    if (USCustomary.YARD.equals(linearUnit)) {
-                        metadata.addGeoShortParam(GeoTiffPCSCodes.ProjLinearUnitsGeoKey,
-                                GeoTiffUoMCodes.Linear_Yard_Sears);// ??
-                        metadata.addGeoDoubleParam(GeoTiffPCSCodes.ProjLinearUnitSizeGeoKey, linearUnit
-                                .getConverterTo(SI.METRE).convert(1));
-                } else
-                    if (USCustomary.FOOT_SURVEY.equals(linearUnit)) {
-                        metadata.addGeoShortParam(GeoTiffPCSCodes.ProjLinearUnitsGeoKey,
-                                GeoTiffUoMCodes.Linear_Foot_US_Survey);// ??
-                        metadata.addGeoDoubleParam(GeoTiffPCSCodes.ProjLinearUnitSizeGeoKey, linearUnit
-                                .getConverterTo(SI.METRE).convert(1));  
-                    }
+                            GeoTiffUoMCodes.Linear_Foot);
+                    metadata.addGeoDoubleParam(GeoTiffPCSCodes.ProjLinearUnitSizeGeoKey, linearUnit
+                            .getConverterTo(SI.METRE).convert(1));
+                } else if (Units.equals(USCustomary.YARD, linearUnit)) {
+                    metadata.addGeoShortParam(GeoTiffPCSCodes.ProjLinearUnitsGeoKey,
+                            GeoTiffUoMCodes.Linear_Yard_Sears);// ??
+                    metadata.addGeoDoubleParam(GeoTiffPCSCodes.ProjLinearUnitSizeGeoKey,
+                            linearUnit.getConverterTo(SI.METRE).convert(1));
+                } else if (Units.equals(USCustomary.FOOT_SURVEY, linearUnit)) {
+                    metadata.addGeoShortParam(GeoTiffPCSCodes.ProjLinearUnitsGeoKey,
+                            GeoTiffUoMCodes.Linear_Foot_US_Survey);// ??
+                    metadata.addGeoDoubleParam(GeoTiffPCSCodes.ProjLinearUnitSizeGeoKey,
+                            linearUnit.getConverterTo(SI.METRE).convert(1));
+                }
 	}
 
 	/**
@@ -981,17 +978,17 @@ public final class CRS2GeoTiffMetadataAdapter {
 	        }
 	        unit = Units.autoCorrect(unit); // auto-correct DEGREE_ANGLE and FOOT_SURVEY
 	        
-	        if(unit.equals(SI.METRE)){
+	        if(Units.equals(unit, SI.METRE)){
 	            metadata.addGeoShortParam(key1, GeoTiffUoMCodes.Linear_Meter);
-	        } else if(unit.equals(USCustomary.FOOT)){
+	        } else if(Units.equals(unit, USCustomary.FOOT)){
 	            metadata.addGeoShortParam(key1, GeoTiffUoMCodes.Linear_Foot);
-	        } else if(unit.equals(USCustomary.FOOT_SURVEY)){
+	        } else if(Units.equals(unit, USCustomary.FOOT_SURVEY)){
                     metadata.addGeoShortParam(key1, GeoTiffUoMCodes.Linear_Foot_US_Survey);
-                } else if(unit.equals(USCustomary.GRADE)){
+                } else if(Units.equals(unit, USCustomary.GRADE)){
                     metadata.addGeoShortParam(key1, GeoTiffUoMCodes.Angular_Grad);
-                } else if(unit.equals(SI.RADIAN)){
+                } else if(Units.equals(unit, SI.RADIAN)){
                     metadata.addGeoShortParam(key1, GeoTiffUoMCodes.Angular_Radian);
-                }  else if(unit.equals(NonSI.DEGREE_ANGLE)){
+                }  else if(Units.equals(unit, NonSI.DEGREE_ANGLE)){
                     metadata.addGeoShortParam(key1, GeoTiffUoMCodes.Angular_Degree);
                 }  else {
                     

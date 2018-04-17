@@ -16,22 +16,37 @@
  */
 package org.geotools.resources;
 
-import java.util.Map;
-import java.util.List;
-import java.util.Iterator;
-import java.util.Collections;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import javax.measure.Unit;
 
-import org.opengis.referencing.IdentifiedObject;
+import org.geotools.geometry.GeneralDirectPosition;
+import org.geotools.measure.AngleFormat;
+import org.geotools.measure.Latitude;
+import org.geotools.measure.Longitude;
+import org.geotools.measure.Units;
+import org.geotools.referencing.CRS;
+import org.geotools.referencing.ReferencingFactoryFinder;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.geotools.referencing.cs.DefaultEllipsoidalCS;
+import org.geotools.referencing.datum.DefaultGeodeticDatum;
+import org.geotools.referencing.datum.DefaultPrimeMeridian;
+import org.geotools.resources.i18n.ErrorKeys;
+import org.geotools.resources.i18n.Errors;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CompoundCRS;
-import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -42,20 +57,6 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.geometry.DirectPosition;
-
-import org.geotools.geometry.GeneralDirectPosition;
-import org.geotools.measure.AngleFormat;
-import org.geotools.measure.Latitude;
-import org.geotools.measure.Longitude;
-import org.geotools.referencing.CRS;
-import org.geotools.referencing.ReferencingFactoryFinder;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.geotools.referencing.cs.DefaultEllipsoidalCS;
-import org.geotools.referencing.datum.DefaultGeodeticDatum;
-import org.geotools.referencing.datum.DefaultPrimeMeridian;
-import org.geotools.resources.i18n.ErrorKeys;
-import org.geotools.resources.i18n.Errors;
 
 
 /**
@@ -137,7 +138,7 @@ public final class CRSUtilities {
             if (candidate != null) {
                 if (unit == null) {
                     unit = candidate;
-                } else if (!unit.equals(candidate)) {
+                } else if (!Units.equals(unit, candidate)) {
                     return null;
                 }
             }

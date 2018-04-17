@@ -22,27 +22,29 @@ package org.geotools.referencing.crs;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.measure.Unit;
-import si.uom.NonSI;
 import javax.measure.quantity.Angle;
 
+import org.geotools.measure.Measure;
+import org.geotools.measure.Units;
+import org.geotools.metadata.iso.extent.ExtentImpl;
+import org.geotools.referencing.AbstractReferenceSystem;  // For javadoc
+import org.geotools.referencing.cs.DefaultEllipsoidalCS;
+import org.geotools.referencing.datum.DefaultEllipsoid;
+import org.geotools.referencing.datum.DefaultGeodeticDatum;
+import org.geotools.referencing.wkt.Formatter;
+import org.geotools.util.UnsupportedImplementationException;
+import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
-import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.geometry.MismatchedDimensionException;
 
-import org.geotools.measure.Measure;
-import org.geotools.metadata.iso.extent.ExtentImpl;
-import org.geotools.referencing.wkt.Formatter;
-import org.geotools.referencing.AbstractReferenceSystem;  // For javadoc
-import org.geotools.referencing.cs.DefaultEllipsoidalCS;
-import org.geotools.referencing.datum.DefaultEllipsoid;
-import org.geotools.referencing.datum.DefaultGeodeticDatum;
-import org.geotools.util.UnsupportedImplementationException;
+import si.uom.NonSI;
 
 
 /**
@@ -263,7 +265,7 @@ public class DefaultGeographicCRS extends AbstractSingleCRS implements Geographi
         for (int i=0; i<dimension; i++) {
             formatter.append(coordinateSystem.getAxis(i));
         }
-        if (!unit.equals(getUnit())) {
+        if (!Units.equals(unit, getUnit())) {
             formatter.setInvalidWKT(GeographicCRS.class);
         }
         formatter.setAngularUnit(oldUnit);

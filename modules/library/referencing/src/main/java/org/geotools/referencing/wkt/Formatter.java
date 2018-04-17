@@ -34,6 +34,7 @@ import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 
 import org.geotools.math.XMath;
+import org.geotools.measure.Units;
 import org.geotools.metadata.iso.citation.Citations;
 import org.geotools.resources.Arguments;
 import org.geotools.resources.X364;
@@ -533,7 +534,7 @@ public class Formatter {
                     warning = exception.getLocalizedMessage();
                     value = Double.NaN;
                 }
-                if (!unit.equals(valueUnit)) {
+                if (!Units.equals(unit, valueUnit)) {
                     value = XMath.trimDecimalFractionDigits(value, 4, 9);
                 }
                 format(value);

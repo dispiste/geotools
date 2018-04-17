@@ -30,6 +30,7 @@ import javax.measure.quantity.Time;
 import si.uom.NonSI;
 import si.uom.SI;
 import systems.uom.common.USCustomary;
+import tec.uom.se.AbstractConverter;
 import tec.uom.se.AbstractUnit;
 import tec.uom.se.format.SimpleUnitFormat;
 import tec.uom.se.function.MultiplyConverter;
@@ -132,7 +133,6 @@ public final class Units {
         format.label(Units.PIXEL, "pixel");
         
         format.label(tec.uom.se.unit.Units.KELVIN, "kelvin");
-        //format.alias(tec.uom.se.unit.Units.KELVIN, "kelvin");
     }
     
     /**
@@ -159,12 +159,12 @@ public final class Units {
      */
     @SuppressWarnings("unchecked")
     public static <Q extends Quantity<Q>> Unit<Q> autoCorrect(Unit<Q> unit) {
-        if( isDegreeAngle(unit)) {
-            return (Unit<Q>) NonSI.DEGREE_ANGLE;
-        }
-        if( isUSSurveyFoot(unit)) {
-            return (Unit<Q>) USCustomary.FOOT_SURVEY;
-        }
+        // if (isDegreeAngle(unit)) {
+        // return (Unit<Q>) NonSI.DEGREE_ANGLE;
+        // }
+        // if (isUSSurveyFoot(unit)) {
+        // return (Unit<Q>) USCustomary.FOOT_SURVEY;
+        // }
         return unit;
     }
 
@@ -220,10 +220,51 @@ public final class Units {
         }
         return false;
     }
+
+    /**
+     * Checks whether two units can be considered equivalent. TransformedUnits are
+     * considered equivalent if they have the same system unit and their conversion
+     * factors to the system unit produce the identity converter when the inverse of
+     * the second factor is concatenated with the first factor, considering the precision
+     * of a float number. For other types of units, the comparison is delegated to their
+     * normal equals method.
+     * 
+     * @param unit1
+     * @param unit2
+     * @return
+     */
+    public static final boolean equals(Unit<?> unit1, Unit<?> unit2) {
+        if (unit1 == unit2) {
+            return true;
+        }
+        if (unit1 != null) {
+            if (unit1 instanceof TransformedUnit<?> && unit2 != null
+                    && unit2 instanceof TransformedUnit<?>) {
+                TransformedUnit<?> tunit1 = (TransformedUnit<?>) unit1;
+                TransformedUnit<?> tunit2 = (TransformedUnit<?>) unit2;
+                if (unit1.getSystemUnit().equals(unit2.getSystemUnit())) {
+                    try {
+                        float factor = (float) tunit1.getSystemConverter()
+                                .concatenate(tunit2.getSystemConverter().inverse()).convert(1.0f);
+                        // FIXME: old JSR-275 library converted to float to compare factors to provide some tolerance
+                        // Should we use a configurable tolerance or a smaller tolerance using doubles?
+                        if (factor == 1.0f) {
+                            return true;
+                        }
+                        return false;
+                    }
+                    catch (Exception e) {}
+                }
+            }
+            return unit1.equals(unit2);
+        }
+        return false;
+    }
     
     /**
      * Gets a UnitConverter between two units, wrapping any raised exception in a
-     * IllegalArgumentException.
+     * IllegalArgumentException. It returns {@link AbstractConverter.IDENTITY} if
+     * units are considered equivalent (see {@link #equals(Unit, Unit)} 
      * 
      * @param fromUnit
      * @param toUnit
@@ -232,7 +273,10 @@ public final class Units {
      */
     public static UnitConverter getConverterToAny(Unit<?> fromUnit, Unit<?> toUnit) {
         try {
-            return fromUnit.getConverterToAny(toUnit);
+            if (!Units.equals(fromUnit, toUnit)) {
+                return fromUnit.getConverterToAny(toUnit);
+            }
+            return AbstractConverter.IDENTITY;
         } catch (UnconvertibleException | IncommensurableException e) {
             throw new IllegalArgumentException(e);
         }
