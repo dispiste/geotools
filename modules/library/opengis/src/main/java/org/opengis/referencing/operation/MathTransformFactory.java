@@ -9,17 +9,22 @@
  */
 package org.opengis.referencing.operation;
 
-import static org.opengis.annotation.Obligation.*;
-import static org.opengis.annotation.Specification.*;
+import static org.opengis.annotation.Obligation.MANDATORY;
+import static org.opengis.annotation.Specification.OGC_01009;
 
 import java.util.Set;
+
 import org.opengis.annotation.Extension;
 import org.opengis.annotation.UML;
-import org.opengis.parameter.*; // Contains some import for javadoc.
+// Contains some import for javadoc.
+import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.Factory;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchIdentifierException;
-import org.opengis.referencing.crs.*; // Contains some import for javadoc.
+// Contains some import for javadoc.
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.datum.Ellipsoid;
 
@@ -117,6 +122,32 @@ public interface MathTransformFactory extends Factory {
      */
     @Extension
     ParameterValueGroup getDefaultParameters(String method) throws NoSuchIdentifierException;
+    
+    /**
+     * Returns the default parameter values for a math transform using the given method. The {@code
+     * method} argument is the name of any operation method returned by <code>
+     * {@link #getAvailableMethods getAvailableMethods}({@linkplain Operation}.class)</code>. A
+     * typical example is <code>
+     * "<A HREF="http://www.remotesensing.org/geotiff/proj_list/transverse_mercator.html">Transverse_Mercator</A>"
+     * </code>).
+     *
+     * <p>The {@linkplain ParameterDescriptorGroup#getName parameter group name} shall be the method
+     * name, or an alias to be understood by <code>{@linkplain #createParameterizedTransform
+     * createParameterizedTransform}(parameters)</code>. This method creates new parameter instances
+     * at every call. Parameters are intended to be modified by the user before to be given to the
+     * above-cited {@code createParameterizedTransform} method.
+     *
+     * @param qualifiedMethodName A qualified method name, to search for before trying the non-qualified version
+     * @param method The case insensitive name of the method to search for.
+     * @return The default parameter values.
+     * @throws NoSuchIdentifierException if there is no transform registered for the specified
+     *     method.
+     * @see #getAvailableMethods
+     * @see #createParameterizedTransform
+     */
+    @Extension
+    ParameterValueGroup getDefaultParameters(String qualifiedMethodName, String methodName)
+            throws NoSuchIdentifierException;
 
     /**
      * Creates a {@linkplain #createParameterizedTransform parameterized transform} from a base CRS

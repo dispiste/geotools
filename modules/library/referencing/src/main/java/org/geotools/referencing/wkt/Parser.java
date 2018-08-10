@@ -48,6 +48,7 @@ import org.geotools.referencing.operation.DefiningConversion;
 import org.geotools.resources.Arguments;
 import org.geotools.resources.i18n.ErrorKeys;
 import org.geotools.resources.i18n.Errors;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.ParameterValue;
@@ -590,6 +591,27 @@ public class Parser extends MathTransformParser {
         }
     }
 
+    private Citation getCitation(Map<String, ?> properties, Map<String, ?> parentProperties) {
+        Object identifier = properties.get(IdentifiedObject.IDENTIFIERS_KEY);
+        if (identifier instanceof Identifier) {
+            return ((Identifier) identifier).getAuthority();
+        }
+        identifier = parentProperties.get(IdentifiedObject.IDENTIFIERS_KEY);
+        if (identifier instanceof Identifier) {
+            return ((Identifier) identifier).getAuthority();
+        }
+        return null;
+    }
+
+    private String getQualifiedName(String name, Citation authority) {
+        if (authority != null) {
+            for (Identifier id : authority.getIdentifiers()) {
+                return id.getCode() + ":" + name;
+            }
+        }
+        return name;
+    }
+
     /**
      * Parses a "PROJECTION" element. This element has the following pattern:
      *
@@ -612,7 +634,8 @@ public class Parser extends MathTransformParser {
             final Element parent,
             final Ellipsoid ellipsoid,
             final Unit<Length> linearUnit,
-            final Unit<Angle> angularUnit)
+            final Unit<Angle> angularUnit,
+            final Map<String, ?> parentProperties)
             throws ParseException {
         final Element element = parent.pullElement("PROJECTION");
         final String classification = element.pullString("name");
@@ -630,7 +653,10 @@ public class Parser extends MathTransformParser {
          */
         final ParameterValueGroup parameters;
         try {
-            parameters = mtFactory.getDefaultParameters(classification);
+            Citation authority = getCitation(properties, parentProperties);
+            parameters =
+                    mtFactory.getDefaultParameters(
+                            getQualifiedName(classification, authority), classification);
         } catch (NoSuchIdentifierException exception) {
             throw element.parseFailed(exception, null);
         }
@@ -986,7 +1012,7 @@ public class Parser extends MathTransformParser {
         Unit<Angle> angularUnit =
                 geoCRS.getCoordinateSystem().getAxis(0).getUnit().asType(Angle.class);
         ParameterValueGroup projection =
-                parseProjection(element, ellipsoid, linearUnit, angularUnit);
+                parseProjection(element, ellipsoid, linearUnit, angularUnit, properties);
         CoordinateSystemAxis axis0 = parseAxis(element, linearUnit, false);
         CoordinateSystemAxis axis1;
         try {

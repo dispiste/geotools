@@ -124,4 +124,26 @@ public class EsriNamedIdentifierAliasesTest {
                 "PROJECTION[\"Equidistant_Cylindrical",
                 "PROJECTION[\"Equidistant Cylindrical");
     }
+
+    /**
+     * Test citations for the ESRI wkt equivalent to EPSG:4088 CRS, which uses EPSG:1029 method -
+     * Equidistant Cylindrical (Spherical). In this case, the ESRI authority is provided in the WKT,
+     * which can create some differences in parsing.
+     */
+    @Test
+    public void equidistantCylindricalSphericalEsriAuthorityCitation() throws Exception {
+        // @formatter:off
+        String equidistantCylindricalSphericalWkt =
+                "PROJCS[\"World_Equidistant_Cylindrical_(Sphere)\","
+                        + "GEOGCS[\"GCS_Sphere_GRS_1980_Authalic\",DATUM[\"D_Sphere_GRS_1980_Authalic\",SPHEROID[\"Sphere_GRS_1980_Authalic\",6371007.0,0.0]],"
+                        + "PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],"
+                        + "PROJECTION[\"Equidistant_Cylindrical\"],"
+                        + "PARAMETER[\"False_Easting\",0.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Central_Meridian\",0.0],PARAMETER[\"Standard_Parallel_1\",0.0],"
+                        + "UNIT[\"Meter\",1.0],AUTHORITY[\"ESRI\",\"4088\"]]";
+        // @formatter:on
+        checkCitation(
+                equidistantCylindricalSphericalWkt,
+                "PROJECTION[\"Equidistant_Cylindrical\"]",
+                "PROJECTION[\"Equidistant Cylindrical (Spherical)\"]");
+    }
 }

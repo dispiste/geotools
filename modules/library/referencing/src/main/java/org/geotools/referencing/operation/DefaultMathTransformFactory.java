@@ -277,6 +277,55 @@ public class DefaultMathTransformFactory extends ReferencingFactory
     }
 
     /**
+     * Returns the math transform provider for the specified operation method. This provider can be
+     * used in order to query parameter for a method name (e.g. <code>
+     * getProvider("Transverse_Mercator").getParameters()</code>), or any of the alias in a given
+     * locale.
+     *
+     * @param method The case insensitive {@linkplain org.opengis.metadata.Identifier#getCode
+     *     identifier code} of the operation method to search for (e.g. {@code
+     *     "Transverse_Mercator"}).
+     * @return The math transform provider.
+     * @throws NoSuchIdentifierException if there is no provider registered for the specified
+     *     method.
+     */
+    private MathTransformProvider getProvider(final String qualifiedMethodName, final String method)
+            throws NoSuchIdentifierException {
+        /*
+         * Copies the 'lastProvider' reference in order to avoid synchronization. This is safe
+         * because copy of object references are atomic operations.  Note that this is not the
+         * deprecated "double check" idiom since we are not creating new objects, but checking
+         * for existing ones.
+         */
+        MathTransformProvider provider = lastProvider;
+        if (provider != null && provider.nameMatches(qualifiedMethodName)) {
+            return provider;
+        }
+
+        provider =
+                registry.getFactories(MathTransformProvider.class, null, HINTS)
+                        .filter(prov -> prov.nameMatches(qualifiedMethodName))
+                        .findAny()
+                        .orElse(null);
+
+        if (provider == null) {
+            provider =
+                    registry.getFactories(MathTransformProvider.class, null, HINTS)
+                            .filter(prov -> prov.nameMatches(method))
+                            .findAny()
+                            .orElseThrow(
+                                    () ->
+                                            new NoSuchIdentifierException(
+                                                    Errors.format(
+                                                            ErrorKeys
+                                                                    .NO_TRANSFORM_FOR_CLASSIFICATION_$1,
+                                                            method),
+                                                    method));
+        }
+        return lastProvider = provider;
+    }
+
+    /**
      * Returns the default parameter values for a math transform using the given method. The method
      * argument is the name of any operation method returned by the {@link #getAvailableMethods}
      * method. A typical example is <code>
@@ -298,6 +347,13 @@ public class DefaultMathTransformFactory extends ReferencingFactory
     public ParameterValueGroup getDefaultParameters(final String method)
             throws NoSuchIdentifierException {
         return getProvider(method).getParameters().createValue();
+    }
+
+    @Override
+    public ParameterValueGroup getDefaultParameters(
+            final String qualifiedMethodName, final String methodName)
+            throws NoSuchIdentifierException {
+        return getProvider(qualifiedMethodName, methodName).getParameters().createValue();
     }
 
     /**
